@@ -103,6 +103,7 @@ import {
   RecentTravisCIBuildsWidget,
   Router as TravisCIRouter,
 } from '@roadiehq/backstage-plugin-travis-ci';
+import { Router as CodeCoverageRouter } from '@backstage/plugin-code-coverage';
 import React, { ReactNode } from 'react';
 
 export const CICDSwitcher = ({ entity }: { entity: Entity }) => {
@@ -278,6 +279,11 @@ const ServiceEntityPage = ({ entity }: { entity: Entity }) => (
       title="Kafka"
       element={<KafkaRouter entity={entity} />}
     />
+    <EntityPageLayout.Content
+      path="/code-coverage/*"
+      title="Code Coverage"
+      element={<CodeCoverageRouter />}
+    />
   </EntityPageLayout>
 );
 
@@ -322,6 +328,11 @@ const WebsiteEntityPage = ({ entity }: { entity: Entity }) => (
       path="/code-insights"
       title="Code Insights"
       element={<GitHubInsightsRouter entity={entity} />}
+    />
+    <EntityPageLayout.Content
+      path="/code-coverage"
+      title="Code Coverage"
+      element={<CodeCoverageRouter />}
     />
   </EntityPageLayout>
 );
