@@ -52,6 +52,7 @@ import { EntityPage } from './components/catalog/EntityPage';
 import Root from './components/Root';
 import { providers } from './identityProviders';
 import * as plugins from './plugins';
+import { CodeCoveragePage } from '@backstage/plugin-code-coverage';
 
 const app = createApp({
   apis,
@@ -122,6 +123,7 @@ const routes = (
       element={<CostInsightsLabelDataflowInstructionsPage />}
     />
     <Route path="/settings" element={<UserSettingsPage />} />
+    <Route path="/code-coverage" element={<CodeCoveragePage />} />
   </FlatRoutes>
 );
 
