@@ -13,15 +13,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import React from 'react';
-import { Grid } from '@material-ui/core';
-import { Entity } from '@backstage/catalog-model';
 
-export const CodeCoveragePage = (e: Entity) => (
-  <Grid container spacing={3} direction="column">
-    <Grid item>
-      foo?
-      {/* {JSON.stringify(e)} */}
-    </Grid>
-  </Grid>
-);
+import { getRootLogger } from '@backstage/backend-common';
+import yn from 'yn';
+import { startStandaloneServer } from './service/standaloneServer';
+
+const port = process.env.PLUGIN_PORT ? Number(process.env.PLUGIN_PORT) : 7000;
+const enableCors = yn(process.env.PLUGIN_CORS, { default: false });
+const logger = getRootLogger();
+
+startStandaloneServer({ port, enableCors, logger }).catch(err => {
+  logger.error(err);
+  process.exit(1);
+});
+
+process.on('SIGINT', () => {
+  logger.info('CTRL+C pressed; exiting.');
+  process.exit(0);
+});

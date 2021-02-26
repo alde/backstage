@@ -6065,6 +6065,14 @@
   dependencies:
     "@types/express" "*"
 
+"@types/express-xml-bodyparser@^0.3.2":
+  version "0.3.2"
+  resolved "https://registry.npmjs.org/@types/express-xml-bodyparser/-/express-xml-bodyparser-0.3.2.tgz#8566883271d4a28fc57b471d06e6c08047496acb"
+  integrity sha512-qX01S9eZI/XY48OLI7+5GnofaFG3VyBEn0oIrY5rxkq/T0U2EBpiUfM0scILUluIR6UGBHMM5C2b8Pmir3Xrtw==
+  dependencies:
+    "@types/express" "*"
+    "@types/xml2js" "*"
+
 "@types/express@*", "@types/express@4.17.7", "@types/express@^4.17.6", "@types/express@^4.17.7":
   version "4.17.7"
   resolved "https://registry.npmjs.org/@types/express/-/express-4.17.7.tgz#42045be6475636d9801369cd4418ef65cdb0dd59"
@@ -7077,7 +7085,7 @@
   dependencies:
     "@types/node" "*"
 
-"@types/xml2js@^0.4.7":
+"@types/xml2js@*", "@types/xml2js@^0.4.7":
   version "0.4.8"
   resolved "https://registry.npmjs.org/@types/xml2js/-/xml2js-0.4.8.tgz#84c120c864a5976d0b5cf2f930a75d850fc2b03a"
   integrity sha512-EyvT83ezOdec7BhDaEcsklWy7RSIdi6CNe95tmOAK0yx/Lm30C9K75snT3fYayK59ApC2oyW+rcHErdG05FHJA==
@@ -12955,6 +12963,13 @@ express-session@^1.17.1:
     parseurl "~1.3.3"
     safe-buffer "5.2.0"
     uid-safe "~2.1.5"
+
+express-xml-bodyparser@^0.3.0:
+  version "0.3.0"
+  resolved "https://registry.npmjs.org/express-xml-bodyparser/-/express-xml-bodyparser-0.3.0.tgz#b1f5a98adf6c6e412c4ccba634234b82945c62be"
+  integrity sha1-sfWpit9sbkEsTMumNCNLgpRcYr4=
+  dependencies:
+    xml2js "^0.4.11"
 
 express@^4.0.0, express@^4.17.0, express@^4.17.1:
   version "4.17.1"
@@ -26758,7 +26773,7 @@ xml2js@0.4.19:
     sax ">=0.6.0"
     xmlbuilder "~9.0.1"
 
-xml2js@^0.4.19, xml2js@^0.4.23:
+xml2js@^0.4.11, xml2js@^0.4.19, xml2js@^0.4.23:
   version "0.4.23"
   resolved "https://registry.npmjs.org/xml2js/-/xml2js-0.4.23.tgz#a0c69516752421eb2ac758ee4d4ccf58843eac66"
   integrity sha512-ySPiMjM0+pLDftHgXY4By0uswI3SPKLDw/i3UXbnO8M/p28zqexCUoPmQFrYD+/1BzhGJSs2i1ERWKJAtiLrug==

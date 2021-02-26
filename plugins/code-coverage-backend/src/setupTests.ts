@@ -13,15 +13,5 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import React from 'react';
-import { Grid } from '@material-ui/core';
-import { Entity } from '@backstage/catalog-model';
 
-export const CodeCoveragePage = (e: Entity) => (
-  <Grid container spacing={3} direction="column">
-    <Grid item>
-      foo?
-      {/* {JSON.stringify(e)} */}
-    </Grid>
-  </Grid>
-);
+export {};
