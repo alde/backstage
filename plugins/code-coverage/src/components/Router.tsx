@@ -17,7 +17,7 @@ import React from 'react';
 import { Entity } from '@backstage/catalog-model';
 import { useEntity } from '@backstage/plugin-catalog-react';
 import { Routes, Route } from 'react-router';
-import { MissingAnnotationEmptyState } from '@backstage/core';
+import { createRouteRef, MissingAnnotationEmptyState } from '@backstage/core';
 import { CodeCoveragePage } from '../plugin';
 
 export const isCodeCoverageAvailable = (entity: Entity) =>
@@ -28,6 +28,10 @@ type Props = {
   entity?: Entity;
 };
 
+// export const rootCatalogCodeCoverageRouteRef = createRouteRef({
+//   title: 'Code-Coverage',
+// });
+
 export const Router = (_props: Props) => {
   const { entity } = useEntity();
 
@@ -37,11 +41,7 @@ export const Router = (_props: Props) => {
   }
   return (
     <Routes>
-      <Route
-        path="/code-coverage"
-        element={<CodeCoveragePage entity={entity} />}
-      />
-      )
+      <Route element={<CodeCoveragePage entity={entity} />} />)
     </Routes>
   );
 };
