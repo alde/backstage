@@ -16,32 +16,17 @@
 import React from 'react';
 import { Entity } from '@backstage/catalog-model';
 import { useEntity } from '@backstage/plugin-catalog-react';
-import { Routes, Route } from 'react-router';
-import { createRouteRef, MissingAnnotationEmptyState } from '@backstage/core';
-import { CodeCoveragePage } from '../plugin';
+import { MissingAnnotationEmptyState } from '@backstage/core';
+import { CodeCoveragePage } from './CodeCoveragePage';
 
 export const isCodeCoverageAvailable = (entity: Entity) =>
   Boolean(entity.metadata.annotations?.['code-coverage']);
 
-type Props = {
-  /** @deprecated The entity is now grabbed from context instead */
-  entity?: Entity;
-};
-
-// export const rootCatalogCodeCoverageRouteRef = createRouteRef({
-//   title: 'Code-Coverage',
-// });
-
-export const Router = (_props: Props) => {
+export const Router = () => {
   const { entity } = useEntity();
 
-  // console.log(entity);
   if (!isCodeCoverageAvailable(entity)) {
     return <MissingAnnotationEmptyState annotation="code-coverage" />;
   }
-  return (
-    <Routes>
-      <Route element={<CodeCoveragePage entity={entity} />} />)
-    </Routes>
-  );
+  return <CodeCoveragePage />;
 };

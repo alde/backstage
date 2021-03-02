@@ -103,11 +103,7 @@ import {
   RecentTravisCIBuildsWidget,
   Router as TravisCIRouter,
 } from '@roadiehq/backstage-plugin-travis-ci';
-import {
-  isPluginApplicableToEntity as isCodeCoverageAvailable,
-  CodeCoveragePage,
-  Router as CodeCoverageRouter,
-} from '@backstage/plugin-code-coverage';
+import { Router as CodeCoverageRouter } from '@backstage/plugin-code-coverage';
 import React, { ReactNode } from 'react';
 
 export const CICDSwitcher = ({ entity }: { entity: Entity }) => {
@@ -219,11 +215,6 @@ const ComponentOverviewContent = ({ entity }: { entity: Entity }) => (
         <PullRequestsStatsCard entity={entity} />
       </Grid>
     )}
-    {isCodeCoverageAvailable(entity) && (
-      <Grid item sm={4}>
-        <CodeCoveragePage entity={entity} />
-      </Grid>
-    )}
     <Grid item md={6}>
       <EntityHasSubcomponentsCard variant="gridItem" />
     </Grid>
@@ -289,9 +280,9 @@ const ServiceEntityPage = ({ entity }: { entity: Entity }) => (
       element={<KafkaRouter entity={entity} />}
     />
     <EntityPageLayout.Content
-      path="/code-coverage"
+      path="/code-coverage/*"
       title="Code Coverage"
-      element={<CodeCoverageRouter entity={entity} />}
+      element={<CodeCoverageRouter />}
     />
   </EntityPageLayout>
 );
@@ -341,7 +332,7 @@ const WebsiteEntityPage = ({ entity }: { entity: Entity }) => (
     <EntityPageLayout.Content
       path="/code-coverage"
       title="Code Coverage"
-      element={<CodeCoverageRouter entity={entity} />}
+      element={<CodeCoverageRouter />}
     />
   </EntityPageLayout>
 );
