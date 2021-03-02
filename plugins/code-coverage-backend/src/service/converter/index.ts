@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Spotify AB
+ * Copyright 2021 Spotify AB
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,20 +13,4 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import React from 'react';
-import { Grid } from '@material-ui/core';
-import { useEntity } from '@backstage/plugin-catalog-react';
-import { Page } from '@backstage/core';
-
-export const CodeCoveragePage = () => {
-  const { entity } = useEntity();
-  return (
-    <Page themeId="tool">
-      <Grid container spacing={3} direction="column">
-        <Grid item>
-          <pre>{JSON.stringify(entity, null, 2)}</pre>
-        </Grid>
-      </Grid>
-    </Page>
-  );
-};
+export { default as cobertura } from './cobertura';

@@ -26,6 +26,7 @@ import {
 } from '@backstage/backend-common';
 import xmlparser from 'express-xml-bodyparser';
 import { Config } from '@backstage/config';
+import { cobertura } from './converter';
 
 export interface RouterOptions {
   config: Config;
@@ -39,15 +40,15 @@ export interface CodeCoverageApi {
 }
 
 const validateRequestBody = (req: Request) => {
-  // const contentType = req.header('content-type');
-  // if (!contentType) {
-  //   // throw new InputError('Content-Type missing');
-  // } else if (!contentType.match(/^text\/xml($|;)/)) {
-  //   // throw new InputError('Illegal Content-Type');
-  // }
+  const contentType = req.header('content-type');
+  if (!contentType) {
+    throw new InputError('Content-Type missing');
+  } else if (!contentType.match(/^text\/xml($|;)/)) {
+    throw new InputError('Illegal Content-Type');
+  }
   const body = req.body;
   if (!body) {
-    // throw new InputError('Missing request body');
+    throw new InputError('Missing request body');
   }
   return body;
 };
@@ -55,26 +56,29 @@ const validateRequestBody = (req: Request) => {
 export const makeRouter = async (
   options: RouterOptions,
 ): Promise<express.Router> => {
-  const { logger, discovery, config } = options;
+  const { logger, discovery } = options;
 
-  const appUrl = config.getString('app.baseUrl');
   const codecovUrl = await discovery.getExternalBaseUrl('code-coverage');
+  console.log(codecovUrl);
   const catalogApi = new CatalogClient({ discoveryApi: discovery });
 
   const router = Router();
+  router.use(xmlparser());
   router.use(express.json());
 
   router.post('/cobertura/:kind/:namespace/:name/', async (req, res) => {
     const { kind, namespace, name } = req.params;
-    const entities = catalogApi.getEntityByName({ kind, namespace, name });
+    logger.info(JSON.stringify(req.params));
+    const entity = await catalogApi.getEntityByName({ kind, namespace, name });
+    logger.info(`e: ${JSON.stringify(entity)}`);
+
     const body = validateRequestBody(req);
-    logger.info(body);
-    // const json = await jsonCoverage.parse(body);
-    res.status(200).json(body);
+    const json = await cobertura(body);
+
+    res.status(200).json(json);
   });
 
-  router.use(xmlparser());
-  // router.use(errorHandler());
+  router.use(errorHandler());
   return router;
 };
 
