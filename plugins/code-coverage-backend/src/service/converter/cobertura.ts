@@ -13,13 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {
-  BranchHit,
-  CoberturaXML,
-  FileEntry,
-  InnerClass,
-  LineHit,
-} from './types';
+import { BranchHit, FileEntry } from '../jsoncoverage-types';
+import { CoberturaXML, InnerClass, LineHit } from './types';
 
 /**
  * Extract line hits from a class coverage entry

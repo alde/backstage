@@ -21,6 +21,7 @@ export default async function createPlugin(env: PluginEnvironment) {
   return await createRouter({
     config: env.config,
     discovery: env.discovery,
+    database: env.database,
     logger: env.logger,
   });
 }
