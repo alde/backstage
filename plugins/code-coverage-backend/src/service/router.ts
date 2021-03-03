@@ -22,21 +22,24 @@ import { CatalogClient } from '@backstage/catalog-client';
 import {
   errorHandler,
   InputError,
+  NotFoundError,
+  PluginDatabaseManager,
   PluginEndpointDiscovery,
 } from '@backstage/backend-common';
 import xmlparser from 'express-xml-bodyparser';
 import { Config } from '@backstage/config';
 import { cobertura } from './converter';
+import { CodeCoverageDatabase } from './CodeCoverageDatabase';
 
 export interface RouterOptions {
   config: Config;
   discovery: PluginEndpointDiscovery;
+  database: PluginDatabaseManager;
   logger: Logger;
 }
 
 export interface CodeCoverageApi {
   name: string;
-  // api: CodeCoverageApi;
 }
 
 const validateRequestBody = (req: Request) => {
@@ -56,26 +59,76 @@ const validateRequestBody = (req: Request) => {
 export const makeRouter = async (
   options: RouterOptions,
 ): Promise<express.Router> => {
-  const { logger, discovery } = options;
+  const { logger, discovery, database } = options;
 
+  const codeCoverageDatabase = await CodeCoverageDatabase.create(
+    await database.getClient(),
+  );
   const codecovUrl = await discovery.getExternalBaseUrl('code-coverage');
-  console.log(codecovUrl);
   const catalogApi = new CatalogClient({ discoveryApi: discovery });
 
   const router = Router();
   router.use(xmlparser());
   router.use(express.json());
 
+  router.get('/:kind/:namespace/:name', async (req, res) => {
+    const { kind, namespace, name } = req.params;
+    const entity = await catalogApi.getEntityByName({ kind, namespace, name });
+    if (!entity) {
+      throw new NotFoundError(
+        `No entity found matching ${kind}/${namespace}/${name}`,
+      );
+    }
+    const stored = await codeCoverageDatabase.getCodeCoverage({
+      kind,
+      namespace,
+      name,
+    });
+
+    res.status(200).json(stored);
+  });
+
   router.post('/cobertura/:kind/:namespace/:name/', async (req, res) => {
     const { kind, namespace, name } = req.params;
-    logger.info(JSON.stringify(req.params));
     const entity = await catalogApi.getEntityByName({ kind, namespace, name });
-    logger.info(`e: ${JSON.stringify(entity)}`);
+    if (!entity) {
+      throw new NotFoundError(
+        `No entity found matching ${kind}/${namespace}/${name}`,
+      );
+    }
 
     const body = validateRequestBody(req);
-    const json = await cobertura(body);
+    const files = await cobertura(body);
 
-    res.status(200).json(json);
+    const coverage = {
+      metadata: {
+        vcs: {
+          type: 'git',
+          url: 'git@ghe.spotify.net:{org}/{repo}.git',
+          ref: 'master',
+        },
+        generationTime: Date.now(),
+      },
+      entity: {
+        name,
+        namespace,
+        kind,
+      },
+      files,
+    };
+
+    const { codeCoverageId } = await codeCoverageDatabase.insertCodeCoverage(
+      coverage,
+    );
+    logger.info(codeCoverageId);
+
+    const stored = await codeCoverageDatabase.getCodeCoverage({
+      kind,
+      namespace,
+      name,
+    });
+
+    res.status(200).json(stored);
   });
 
   router.use(errorHandler());

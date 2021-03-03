@@ -13,41 +13,31 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-export type CoberturaXML = {
-  coverage: Coverage;
+import { EntityName } from '@backstage/catalog-model';
+
+export type JsonCodeCoverage = {
+  metadata: CoverageMetadata;
+  entity: EntityName;
+  files: Array<FileEntry>;
 };
 
-export type Coverage = {
-  packages: Array<Package>;
-};
-
-export type Package = {
-  package: Array<InnerPackage>;
-};
-
-export type InnerPackage = {
-  classes: Array<Class>;
-};
-export type Class = {
-  class: Array<InnerClass>;
-};
-export type InnerClass = {
-  $: {
-    filename: string;
+export type CoverageMetadata = {
+  vcs: {
+    type: string;
+    url: string;
+    ref: string;
   };
-  lines: Array<Line>;
-};
-export type Line = {
-  line: Array<InnerLine>;
+  generationTime: number;
 };
 
-export type InnerLine = {
-  $: LineHit;
+export type BranchHit = {
+  covered: number;
+  missed: number;
+  available: number;
 };
 
-export type LineHit = {
-  branch?: boolean;
-  'condition-coverage'?: string;
-  number: number;
-  hits: number;
+export type FileEntry = {
+  filename: string;
+  lineHits: Record<number, number>;
+  branchHits: Record<number, BranchHit>;
 };
