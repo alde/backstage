@@ -15,6 +15,7 @@
  */
 import { BranchHit, FileEntry } from '../jsoncoverage-types';
 import { CoberturaXML, InnerClass, LineHit } from './types';
+import { Logger } from 'winston';
 
 /**
  * Extract line hits from a class coverage entry
@@ -58,9 +59,13 @@ const parseBranch = (condition: string): BranchHit | null => {
  * Converts cobertura into shared json coverage format
  *
  * @param xml cobertura xml object
- * @param files list of files that are commited to VCS
+ * @param scmFiles list of files that are commited to SCM
  */
-const convert = (xml: CoberturaXML, files: Array<string>): Array<FileEntry> => {
+const convert = (
+  xml: CoberturaXML,
+  scmFiles: Array<string>,
+  logger: Logger,
+): Array<FileEntry> => {
   const packages = xml.coverage.packages.flatMap(ps => {
     return ps.package;
   });
@@ -87,10 +92,12 @@ const convert = (xml: CoberturaXML, files: Array<string>): Array<FileEntry> => {
           }
         }
       });
-      // const currentFile = files.find(f => f.endsWith(packageAndFilename));
-      if (Object.keys(lineHits).length > 0 /* && currentFile */) {
+
+      const currentFile = scmFiles.find(f => f.endsWith(packageAndFilename));
+      logger.info(`matched ${packageAndFilename} to ${currentFile}`);
+      if (Object.keys(lineHits).length > 0 && currentFile) {
         jscov.unshift({
-          filename: packageAndFilename, // should be currentFile
+          filename: currentFile,
           branchHits: branchHits,
           lineHits: lineHits,
         });
@@ -106,8 +113,12 @@ const convert = (xml: CoberturaXML, files: Array<string>): Array<FileEntry> => {
  *
  * @param xml cobertura xml document
  */
-const cobertura = async (xml: CoberturaXML): Promise<Array<FileEntry>> => {
-  return convert(xml, []);
+const cobertura = async (
+  xml: CoberturaXML,
+  scmFiles: Array<string>,
+  logger: Logger,
+): Promise<Array<FileEntry>> => {
+  return convert(xml, scmFiles, logger);
 };
 
 export default cobertura;

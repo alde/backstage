@@ -22,6 +22,7 @@ export default async function createPlugin(env: PluginEnvironment) {
     config: env.config,
     discovery: env.discovery,
     database: env.database,
+    urlReader: env.reader,
     logger: env.logger,
   });
 }

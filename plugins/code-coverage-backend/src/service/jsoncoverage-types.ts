@@ -24,8 +24,7 @@ export type JsonCodeCoverage = {
 export type CoverageMetadata = {
   vcs: {
     type: string;
-    url: string;
-    ref: string;
+    location: string;
   };
   generationTime: number;
 };

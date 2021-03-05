@@ -74,7 +74,6 @@ export class CodeCoverageDatabase implements CodeCoverageStore {
       );
     }
     try {
-      console.log(result);
       return JSON.parse(result.coverage);
     } catch (error) {
       throw new Error(`Failed to parse spec of task '${entity}', ${error}`);

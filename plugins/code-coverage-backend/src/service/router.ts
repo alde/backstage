@@ -25,9 +25,11 @@ import {
   NotFoundError,
   PluginDatabaseManager,
   PluginEndpointDiscovery,
+  UrlReader,
 } from '@backstage/backend-common';
-import xmlparser from 'express-xml-bodyparser';
 import { Config } from '@backstage/config';
+import { ScmIntegrations } from '@backstage/integration';
+import xmlparser from 'express-xml-bodyparser';
 import { cobertura } from './converter';
 import { CodeCoverageDatabase } from './CodeCoverageDatabase';
 
@@ -35,6 +37,7 @@ export interface RouterOptions {
   config: Config;
   discovery: PluginEndpointDiscovery;
   database: PluginDatabaseManager;
+  urlReader: UrlReader;
   logger: Logger;
 }
 
@@ -59,13 +62,14 @@ const validateRequestBody = (req: Request) => {
 export const makeRouter = async (
   options: RouterOptions,
 ): Promise<express.Router> => {
-  const { logger, discovery, database } = options;
+  const { config, logger, discovery, database, urlReader } = options;
 
   const codeCoverageDatabase = await CodeCoverageDatabase.create(
     await database.getClient(),
   );
   const codecovUrl = await discovery.getExternalBaseUrl('code-coverage');
   const catalogApi = new CatalogClient({ discoveryApi: discovery });
+  const scm = ScmIntegrations.fromConfig(config);
 
   const router = Router();
   router.use(xmlparser());
@@ -96,16 +100,35 @@ export const makeRouter = async (
         `No entity found matching ${kind}/${namespace}/${name}`,
       );
     }
+    // require backstage.io/source-location annotation
+    const sourceLocation =
+      entity.metadata.annotations?.['backstage.io/source-location'];
+    if (!sourceLocation) {
+      throw new InputError(
+        `No "backstage.io/source-location" annotation on entity ${kind}/${namespace}/${name}`,
+      );
+    }
+
+    const vcs = scm.byUrl(sourceLocation);
+    if (!vcs) {
+      throw new InputError(`Unable to determine SCM from ${sourceLocation}`);
+    }
 
     const body = validateRequestBody(req);
-    const files = await cobertura(body);
+
+    const scmTree = await urlReader.readTree(sourceLocation);
+    const scmFiles = (await scmTree.files()).map(f => f.path);
+
+    const files = await cobertura(body, scmFiles, logger);
+    if (!files || files.length === 0) {
+      throw new InputError('Unable to parse body as Cobertura XML');
+    }
 
     const coverage = {
       metadata: {
         vcs: {
-          type: 'git',
-          url: 'git@ghe.spotify.net:{org}/{repo}.git',
-          ref: 'master',
+          type: vcs.type,
+          location: sourceLocation,
         },
         generationTime: Date.now(),
       },
@@ -117,18 +140,16 @@ export const makeRouter = async (
       files,
     };
 
-    const { codeCoverageId } = await codeCoverageDatabase.insertCodeCoverage(
-      coverage,
-    );
-    logger.info(codeCoverageId);
+    await codeCoverageDatabase.insertCodeCoverage(coverage);
 
-    const stored = await codeCoverageDatabase.getCodeCoverage({
-      kind,
-      namespace,
-      name,
+    res.status(201).json({
+      links: [
+        {
+          rel: 'coverage',
+          href: `${codecovUrl}/${kind}/${namespace}/${name}`,
+        },
+      ],
     });
-
-    res.status(200).json(stored);
   });
 
   router.use(errorHandler());
