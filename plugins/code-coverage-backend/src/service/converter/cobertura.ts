@@ -96,7 +96,7 @@ const convert = (
       const currentFile = scmFiles.find(f => f.endsWith(packageAndFilename));
       logger.info(`matched ${packageAndFilename} to ${currentFile}`);
       if (Object.keys(lineHits).length > 0 && currentFile) {
-        jscov.unshift({
+        jscov.push({
           filename: currentFile,
           branchHits: branchHits,
           lineHits: lineHits,
