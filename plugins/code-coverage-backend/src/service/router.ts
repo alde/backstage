@@ -166,6 +166,59 @@ export const makeRouter = async (
     res.status(200).json(stored);
   });
 
+  router.get('/:kind/:namespace/:name/file-content', async (req, res) => {
+    const { kind, namespace, name } = req.params;
+    const entity = await catalogApi.getEntityByName({ kind, namespace, name });
+    if (!entity) {
+      throw new NotFoundError(
+        `No entity found matching ${kind}/${namespace}/${name}`,
+      );
+    }
+    const { path } = req.query;
+    if (!path) {
+      throw new InputError('Need path query parameter');
+    }
+
+    const sourceLocation =
+      entity.metadata.annotations?.['backstage.io/source-location'];
+    if (!sourceLocation) {
+      throw new InputError(
+        `No "backstage.io/source-location" annotation on entity ${entity.kind}/${entity.metadata.namespace}/${entity.metadata.name}`,
+      );
+    }
+
+    const vcs = scm.byUrl(sourceLocation);
+    if (!vcs) {
+      throw new InputError(`Unable to determine SCM from ${sourceLocation}`);
+    }
+
+    const scmTree = await urlReader.readTree(sourceLocation);
+    const scmFile = (await scmTree.files()).find(f => f.path === path);
+    if (!scmFile) {
+      res
+        .status(400)
+        .json({
+          message: "couldn't find file in SCM",
+          file: path,
+          scm: vcs.title,
+        });
+      return;
+    }
+    const content = await scmFile?.content();
+    if (!content) {
+      res
+        .status(400)
+        .json({
+          message: "couldn't process content of file in SCM",
+          file: path,
+          scm: vcs.title,
+        });
+      return;
+    }
+
+    res.status(200).send(content);
+  });
+
   router.post('/cobertura/:kind/:namespace/:name/', async (req, res) => {
     const { kind, namespace, name } = req.params;
     const entity = await catalogApi.getEntityByName({ kind, namespace, name });
