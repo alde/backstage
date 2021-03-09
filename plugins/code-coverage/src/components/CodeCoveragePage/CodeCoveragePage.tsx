@@ -14,18 +14,38 @@
  * limitations under the License.
  */
 import React from 'react';
+import { useAsync } from 'react-use';
 import { Grid } from '@material-ui/core';
+import Alert from '@material-ui/lab/Alert';
 import { useEntity } from '@backstage/plugin-catalog-react';
-import { Page } from '@backstage/core';
+import { Page, Progress, useApi } from '@backstage/core';
+import { codeCoverageApiRef } from '../../api';
 
 export const CodeCoveragePage = () => {
   const { entity } = useEntity();
+  const codeCoverageApi = useApi(codeCoverageApiRef);
+  const { loading, error, value } = useAsync(
+    async () =>
+      await codeCoverageApi.getCoverageForEntity({
+        kind: entity.kind,
+        namespace: entity.metadata.namespace || 'default',
+        name: entity.metadata.name,
+      }),
+  );
+
+  let content;
+  if (loading) {
+    content = <Progress />;
+  } else if (error) {
+    content = <Alert severity="error">{error.message}</Alert>;
+  } else if (value) {
+    content = <pre>{JSON.stringify(value, null, 2)}</pre>;
+  }
+
   return (
     <Page themeId="tool">
       <Grid container spacing={3} direction="column">
-        <Grid item>
-          <pre>{JSON.stringify(entity, null, 2)}</pre>
-        </Grid>
+        <Grid item>{content}</Grid>
       </Grid>
     </Page>
   );
