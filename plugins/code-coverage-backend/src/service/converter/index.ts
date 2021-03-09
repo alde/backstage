@@ -14,3 +14,4 @@
  * limitations under the License.
  */
 export { default as cobertura } from './cobertura';
+export { default as jacoco } from './jacoco';

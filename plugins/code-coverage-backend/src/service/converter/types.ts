@@ -13,6 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
+// *** Cobertura ***
 export type CoberturaXML = {
   coverage: Coverage;
 };
@@ -50,4 +52,33 @@ export type LineHit = {
   'condition-coverage'?: string;
   number: number;
   hits: number;
+};
+
+// *** Jacoco ***
+export type JacocoXML = {
+  report: JacocoReport;
+};
+export type JacocoReport = {
+  package: JacocoPackage[];
+};
+export type JacocoPackage = {
+  $: {
+    name: string;
+  };
+  sourcefile: JacocoSourceFile[];
+};
+export type JacocoSourceFile = {
+  $: {
+    name: string;
+  };
+  line: JacocoLine[];
+};
+export type JacocoLine = {
+  $: {
+    nr: string;
+    mi: string;
+    ci: string;
+    mb: string;
+    cb: string;
+  };
 };

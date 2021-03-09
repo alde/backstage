@@ -14,17 +14,50 @@
  * limitations under the License.
  */
 
-import { getVoidLogger } from '@backstage/backend-common';
+import {
+  getVoidLogger,
+  PluginDatabaseManager,
+  PluginEndpointDiscovery,
+  SingleConnectionDatabaseManager,
+  UrlReaders,
+} from '@backstage/backend-common';
+import { ConfigReader } from '@backstage/config';
 import express from 'express';
 import request from 'supertest';
 
 import { createRouter } from './router';
+
+function createDatabase(): PluginDatabaseManager {
+  return SingleConnectionDatabaseManager.fromConfig(
+    new ConfigReader({
+      backend: {
+        database: {
+          client: 'sqlite3',
+          connection: ':memory:',
+        },
+      },
+    }),
+  ).forPlugin('code-coverage');
+}
+
+const testDiscovery: jest.Mocked<PluginEndpointDiscovery> = {
+  getBaseUrl: jest.fn().mockResolvedValue('http://localhost:7000/api/techdocs'),
+  getExternalBaseUrl: jest.fn(),
+};
+const mockUrlReader = UrlReaders.default({
+  logger: getVoidLogger(),
+  config: new ConfigReader({}),
+});
 
 describe('createRouter', () => {
   let app: express.Express;
 
   beforeAll(async () => {
     const router = await createRouter({
+      config: new ConfigReader({}),
+      database: createDatabase(),
+      discovery: testDiscovery,
+      urlReader: mockUrlReader,
       logger: getVoidLogger(),
     });
     app = express().use(router);

@@ -30,7 +30,7 @@ import {
 import { Config } from '@backstage/config';
 import { ScmIntegrations } from '@backstage/integration';
 import xmlparser from 'express-xml-bodyparser';
-import { cobertura } from './converter';
+import { cobertura, jacoco } from './converter';
 import { CodeCoverageDatabase } from './CodeCoverageDatabase';
 
 export interface RouterOptions {
@@ -75,6 +75,9 @@ export const makeRouter = async (
   router.use(xmlparser());
   router.use(express.json());
 
+  router.get('/health', async (req, res) => {
+    res.status(200).json({ status: 'ok' });
+  });
   router.get('/:kind/:namespace/:name', async (req, res) => {
     const { kind, namespace, name } = req.params;
     const entity = await catalogApi.getEntityByName({ kind, namespace, name });
@@ -129,6 +132,66 @@ export const makeRouter = async (
         vcs: {
           type: vcs.type,
           location: sourceLocation,
+        },
+        generationTime: Date.now(),
+      },
+      entity: {
+        name,
+        namespace,
+        kind,
+      },
+      files,
+    };
+
+    await codeCoverageDatabase.insertCodeCoverage(coverage);
+
+    res.status(201).json({
+      links: [
+        {
+          rel: 'coverage',
+          href: `${codecovUrl}/${kind}/${namespace}/${name}`,
+        },
+      ],
+    });
+  });
+
+  router.post('/jacoco/:kind/:namespace/:name/', async (req, res) => {
+    const { kind, namespace, name } = req.params;
+    // const entity = await catalogApi.getEntityByName({ kind, namespace, name });
+    // if (!entity) {
+    //   throw new NotFoundError(
+    //     `No entity found matching ${kind}/${namespace}/${name}`,
+    //   );
+    // }
+    // // require backstage.io/source-location annotation
+    // const sourceLocation =
+    //   entity.metadata.annotations?.['backstage.io/source-location'];
+    // if (!sourceLocation) {
+    //   throw new InputError(
+    //     `No "backstage.io/source-location" annotation on entity ${kind}/${namespace}/${name}`,
+    //   );
+    // }
+
+    // const vcs = scm.byUrl(sourceLocation);
+    // if (!vcs) {
+    //   throw new InputError(`Unable to determine SCM from ${sourceLocation}`);
+    // }
+
+    const body = validateRequestBody(req);
+
+    // const scmTree = await urlReader.readTree(sourceLocation);
+    // const scmFiles = (await scmTree.files()).map(f => f.path);
+
+    const files = await jacoco(body, [], logger);
+    if (!files || files.length === 0) {
+      throw new InputError('Unable to parse body as Jacoco XML');
+    }
+
+    const coverage = {
+      metadata: {
+        vcs: {
+          type: 'git', // vcs.type,
+          location: 'local', // sourceLocation,
         },
         generationTime: Date.now(),
       },
