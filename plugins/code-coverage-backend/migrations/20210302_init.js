@@ -31,7 +31,7 @@ exports.up = async function up(knex) {
     table.text('entity_kind').notNullable().comment('entity kind');
     table.text('entity_namespace').notNullable().comment('entity namespace');
     table
-      .string('coverage')
+      .text('coverage')
       .notNullable()
       .comment('The coverage json as a string');
     table
