@@ -13,5 +13,5 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-export { default as cobertura } from './cobertura';
-export { default as jacoco } from './jacoco';
+export { convertCobertura } from './cobertura';
+export { convertJacoco } from './jacoco';

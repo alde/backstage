@@ -46,7 +46,7 @@ const extractLines = (sourcefile: JacocoSourceFile): ParsedLine[] => {
  * @param xml jacoco xml object
  * @param scmFiles list of files that are commited to SCM
  */
-export const convert = (
+export const convertJacoco = (
   xml: JacocoXML,
   scmFiles: Array<string>,
   logger: Logger,
@@ -91,4 +91,4 @@ export const convert = (
   return jscov;
 };
 
-export default convert;
+export default convertJacoco;

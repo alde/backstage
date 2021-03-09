@@ -30,7 +30,7 @@ import {
 import { Config } from '@backstage/config';
 import { ScmIntegration, ScmIntegrations } from '@backstage/integration';
 import xmlparser from 'express-xml-bodyparser';
-import { cobertura, jacoco } from './converter';
+import { convertCobertura, convertJacoco } from './converter';
 import { CodeCoverageDatabase } from './CodeCoverageDatabase';
 import { Entity } from '@backstage/catalog-model';
 import { CoberturaXML } from './converter/types';
@@ -146,9 +146,10 @@ export const makeRouter = async (
     };
   };
 
-  router.get('/health', async (req, res) => {
+  router.get('/health', async (_req, res) => {
     res.status(200).json({ status: 'ok' });
   });
+
   router.get('/:kind/:namespace/:name', async (req, res) => {
     const { kind, namespace, name } = req.params;
     const entity = await catalogApi.getEntityByName({ kind, namespace, name });
@@ -195,24 +196,20 @@ export const makeRouter = async (
     const scmTree = await urlReader.readTree(sourceLocation);
     const scmFile = (await scmTree.files()).find(f => f.path === path);
     if (!scmFile) {
-      res
-        .status(400)
-        .json({
-          message: "couldn't find file in SCM",
-          file: path,
-          scm: vcs.title,
-        });
+      res.status(400).json({
+        message: "couldn't find file in SCM",
+        file: path,
+        scm: vcs.title,
+      });
       return;
     }
     const content = await scmFile?.content();
     if (!content) {
-      res
-        .status(400)
-        .json({
-          message: "couldn't process content of file in SCM",
-          file: path,
-          scm: vcs.title,
-        });
+      res.status(400).json({
+        message: "couldn't process content of file in SCM",
+        file: path,
+        scm: vcs.title,
+      });
       return;
     }
 
@@ -235,7 +232,11 @@ export const makeRouter = async (
       body,
     } = await processCoveragePayload(entity, req);
 
-    const files = await cobertura(body as CoberturaXML, scmFiles, logger);
+    const files = await convertCobertura(
+      body as CoberturaXML,
+      scmFiles,
+      logger,
+    );
     if (!files || files.length === 0) {
       throw new InputError('Unable to parse body as Cobertura XML');
     }
@@ -269,7 +270,7 @@ export const makeRouter = async (
       body,
     } = await processCoveragePayload(entity, req);
 
-    const files = await jacoco(body, scmFiles, logger);
+    const files = await convertJacoco(body, scmFiles, logger);
     if (!files || files.length === 0) {
       throw new InputError('Unable to parse body as Jacoco XML');
     }

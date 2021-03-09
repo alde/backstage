@@ -56,12 +56,12 @@ const parseBranch = (condition: string): BranchHit | null => {
 };
 
 /**
- * Converts cobertura into shared json coverage format
+ * convert cobertura into shared json coverage format
  *
  * @param xml cobertura xml object
  * @param scmFiles list of files that are commited to SCM
  */
-const convert = (
+export const convertCobertura = (
   xml: CoberturaXML,
   scmFiles: Array<string>,
   logger: Logger,
@@ -108,17 +108,4 @@ const convert = (
   return jscov;
 };
 
-/**
- * Converts cobertura coverage into a standardized json coverage format.
- *
- * @param xml cobertura xml document
- */
-const cobertura = async (
-  xml: CoberturaXML,
-  scmFiles: Array<string>,
-  logger: Logger,
-): Promise<Array<FileEntry>> => {
-  return convert(xml, scmFiles, logger);
-};
-
-export default cobertura;
+export default convertCobertura;

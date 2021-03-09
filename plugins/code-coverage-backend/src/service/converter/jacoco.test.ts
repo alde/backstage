@@ -21,11 +21,11 @@ import { getVoidLogger } from '@backstage/backend-common';
 
 /* eslint-disable no-restricted-syntax */
 
-describe('convert', () => {
+describe('convert jacoco', () => {
   let fixture: JacocoXML;
   parseString(
     fs.readFileSync(`${__dirname}/__fixtures__/jacoco-testdata-1.xml`),
-    (e, r) => {
+    (_e, r) => {
       fixture = r;
     },
   );
