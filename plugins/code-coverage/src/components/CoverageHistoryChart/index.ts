@@ -13,19 +13,5 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import React from 'react';
-import { Content, ContentHeader, Page } from '@backstage/core';
-import { CoverageHistoryChart } from '../CoverageHistoryChart';
-import { FileExplorer } from '../FileExplorer';
 
-export const CodeCoveragePage = () => {
-  return (
-    <Page themeId="tool">
-      <Content>
-        <ContentHeader title="Code coverage" />
-        <CoverageHistoryChart />
-        <FileExplorer />
-      </Content>
-    </Page>
-  );
-};
+export { CoverageHistoryChart } from './CoverageHistoryChart';
