@@ -35,6 +35,14 @@ export class FetchError extends Error {
 export type CodeCoverageApi = {
   url: string;
   getCoverageForEntity: (entity: EntityName) => Promise<any>;
+  getFileContentFromEntity: (
+    entity: EntityName,
+    filePath: string,
+  ) => Promise<any>;
+  getCoverageHistoryForEntity: (
+    entity: EntityName,
+    limit?: number,
+  ) => Promise<any>;
 };
 
 export const codeCoverageApiRef = createApiRef<CodeCoverageApi>({
@@ -62,6 +70,27 @@ export class CodeCoverageRestApi implements CodeCoverageApi {
   }: EntityName): Promise<any> {
     return await this.fetch<any>(
       `/api/code-coverage/${kind}/${namespace}/${name}`,
+    );
+  }
+
+  async getFileContentFromEntity(
+    { kind, namespace, name }: EntityName,
+    filePath: string,
+  ): Promise<any> {
+    return await this.fetch<any>(
+      `/api/code-coverage/${kind}/${namespace}/${name}/file-content?path=${filePath}`,
+    );
+  }
+
+  async getCoverageHistoryForEntity(
+    { kind, namespace, name }: EntityName,
+    limit?: number,
+  ): Promise<any> {
+    const hasValidLimit = limit && limit > 0;
+    return await this.fetch<any>(
+      `/api/code-coverage/${kind}/${namespace}/${name}/history${
+        hasValidLimit ? `?limit=${limit}` : ''
+      }`,
     );
   }
 }
