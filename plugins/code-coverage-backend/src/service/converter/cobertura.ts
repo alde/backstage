@@ -107,9 +107,12 @@ export const convertCobertura = (
 
     const currentFile = scmFiles.find(f => f.endsWith(packageAndFilename));
     logger.info(`matched ${packageAndFilename} to ${currentFile}`);
-    if (Object.keys(lineHits).length > 0 && currentFile) {
+    if (
+      scmFiles.length === 0 ||
+      (Object.keys(lineHits).length > 0 && currentFile)
+    ) {
       jscov.push({
-        filename: currentFile,
+        filename: currentFile || packageAndFilename,
         branchHits: branchHits,
         lineHits: lineHits,
       });

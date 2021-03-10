@@ -35,6 +35,7 @@ import { CodeCoverageDatabase } from './CodeCoverageDatabase';
 import { Entity } from '@backstage/catalog-model';
 import { CoberturaXML, JacocoXML } from './converter/types';
 import { FileEntry, JsonCodeCoverage } from './jsoncoverage-types';
+import { aggregateCoverage } from './CoverageUtils';
 
 export interface RouterOptions {
   config: Config;
@@ -69,6 +70,7 @@ export const makeRouter = async (
 
   const codeCoverageDatabase = await CodeCoverageDatabase.create(
     await database.getClient(),
+    logger,
   );
   const codecovUrl = await discovery.getExternalBaseUrl('code-coverage');
   const catalogApi = new CatalogClient({ discoveryApi: discovery });
@@ -164,7 +166,36 @@ export const makeRouter = async (
       name,
     });
 
-    res.status(200).json(stored);
+    const aggregate = aggregateCoverage(stored);
+
+    res.status(200).json({
+      ...stored,
+      aggregate: {
+        line: aggregate.line,
+        branch: aggregate.branch,
+      },
+    });
+  });
+
+  router.get('/:kind/:namespace/:name/history', async (req, res) => {
+    const { kind, namespace, name } = req.params;
+    const entity = await catalogApi.getEntityByName({ kind, namespace, name });
+    if (!entity) {
+      throw new NotFoundError(
+        `No entity found matching ${kind}/${namespace}/${name}`,
+      );
+    }
+    const { limit } = req.query;
+    const history = await codeCoverageDatabase.getHistory(
+      {
+        kind,
+        namespace,
+        name,
+      },
+      parseInt(limit?.toString() || '10', 10),
+    );
+
+    res.status(200).json(history);
   });
 
   router.get('/:kind/:namespace/:name/file-content', async (req, res) => {

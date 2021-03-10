@@ -21,6 +21,19 @@ export type JsonCodeCoverage = {
   files: Array<FileEntry>;
 };
 
+export type JsonCoverageHistory = {
+  entity: EntityName;
+  history: Array<CoverageHistory>;
+};
+
+export type CoverageHistory = {
+  line: {
+    available: number;
+    covered: number;
+  };
+  branch: BranchHit;
+};
+
 export type CoverageMetadata = {
   vcs: {
     type: string;
@@ -39,4 +52,20 @@ export type FileEntry = {
   filename: string;
   lineHits: Record<number, number>;
   branchHits: Record<number, BranchHit>;
+};
+
+export type AggregateCoverage = {
+  timestamp: number;
+  line: {
+    available: number;
+    covered: number;
+    missed: number;
+    percentage: number;
+  };
+  branch: {
+    available: number;
+    covered: number;
+    missed: number;
+    percentage: number;
+  };
 };

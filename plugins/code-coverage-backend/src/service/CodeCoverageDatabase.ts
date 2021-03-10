@@ -15,9 +15,11 @@
  */
 import { NotFoundError, resolvePackagePath } from '@backstage/backend-common';
 import { EntityName } from '@backstage/catalog-model';
-import Knex from 'knex';
+import { Knex } from 'knex';
 import { v4 as uuid } from 'uuid';
-import { JsonCodeCoverage } from './jsoncoverage-types';
+import { Logger } from 'winston';
+import { aggregateCoverage } from './CoverageUtils';
+import { JsonCodeCoverage, JsonCoverageHistory } from './jsoncoverage-types';
 
 export type RawDbCoverageRow = {
   id: string;
@@ -31,6 +33,7 @@ export interface CodeCoverageStore {
     coverage: JsonCodeCoverage,
   ): Promise<{ codeCoverageId: string }>;
   getCodeCoverage(entity: EntityName): Promise<JsonCodeCoverage>;
+  getHistory(entity: EntityName, limit: number): Promise<JsonCoverageHistory>;
 }
 
 const migrationsDir = resolvePackagePath(
@@ -38,14 +41,14 @@ const migrationsDir = resolvePackagePath(
   'migrations',
 );
 export class CodeCoverageDatabase implements CodeCoverageStore {
-  static async create(knex: Knex): Promise<CodeCoverageStore> {
+  static async create(knex: Knex, logger: Logger): Promise<CodeCoverageStore> {
     await knex.migrate.latest({
       directory: migrationsDir,
     });
-    return new CodeCoverageDatabase(knex);
+    return new CodeCoverageDatabase(knex, logger);
   }
 
-  constructor(private readonly db: Knex) {}
+  constructor(private readonly db: Knex, private readonly logger: Logger) {}
 
   async insertCodeCoverage(
     coverage: JsonCodeCoverage,
@@ -67,16 +70,40 @@ export class CodeCoverageDatabase implements CodeCoverageStore {
         entity_kind: entity.kind,
         entity_namespace: entity.namespace,
       })
+      .limit(1)
       .select();
     if (!result) {
       throw new NotFoundError(
-        `No task with entity '${JSON.stringify(entity)}' found`,
+        `No coverage for entity '${JSON.stringify(entity)}' found`,
       );
     }
     try {
       return JSON.parse(result.coverage);
     } catch (error) {
-      throw new Error(`Failed to parse spec of task '${entity}', ${error}`);
+      throw new Error(`Failed to parse coverage for '${entity}', ${error}`);
     }
+  }
+
+  async getHistory(
+    entity: EntityName,
+    limit: number,
+  ): Promise<JsonCoverageHistory> {
+    const res = await this.db<RawDbCoverageRow>('code_coverage')
+      .where({
+        entity_name: entity.name,
+        entity_kind: entity.kind,
+        entity_namespace: entity.namespace,
+      })
+      .limit(limit)
+      .select();
+
+    const history = res
+      .map(r => JSON.parse(r.coverage))
+      .map(c => aggregateCoverage(c));
+
+    return {
+      entity,
+      history: history,
+    };
   }
 }
