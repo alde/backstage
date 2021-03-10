@@ -23,7 +23,14 @@ import { Logger } from 'winston';
  * @param clz class coverage information
  */
 const extractLines = (clz: InnerClass): Array<LineHit> => {
-  const lines = clz.lines.flatMap(l => l.line);
+  const classLines = clz.lines.flatMap(l => l.line);
+  const methodLines = clz.methods
+    ?.flatMap(m => m.method)
+    .filter(Boolean)
+    .flatMap(m => m.lines)
+    .filter(Boolean)
+    .flatMap(l => l.line);
+  const lines = [classLines, methodLines].flat().filter(Boolean);
   const lineHits = lines.map(l => {
     return {
       number: parseInt((l.$.number as unknown) as string, 10),
@@ -46,8 +53,8 @@ const parseBranch = (condition: string): BranchHit | null => {
   if (!match) {
     return null;
   }
-  const covered = parseInt(match[0], 10);
-  const available = parseInt(match[1], 10);
+  const covered = parseInt(match[1], 10);
+  const available = parseInt(match[2], 10);
   return {
     covered: covered,
     missed: available - covered,
@@ -66,43 +73,47 @@ export const convertCobertura = (
   scmFiles: Array<string>,
   logger: Logger,
 ): Array<FileEntry> => {
-  const packages = xml.coverage.packages.flatMap(ps => {
-    return ps.package;
-  });
+  const ppc = xml.coverage.packages
+    ?.flatMap(p => p.package)
+    .filter(Boolean)
+    .flatMap(p => p.classes);
+  const pc = xml.coverage.package?.filter(Boolean).flatMap(p => p.classes);
 
+  const classes = [ppc, pc]
+    .flat()
+    .filter(Boolean)
+    .flatMap(c => c.class)
+    .filter(Boolean);
   const jscov: Array<FileEntry> = [];
-  packages.forEach(p => {
-    const classes = p.classes.flatMap(cs => cs.class);
 
-    classes.forEach(c => {
-      const packageAndFilename = c.$.filename;
-      const lines = extractLines(c);
-      const lineHits: Record<number, number> = {};
-      const branchHits: Record<number, BranchHit> = {};
+  classes.forEach(c => {
+    const packageAndFilename = c.$.filename;
+    const lines = extractLines(c);
+    const lineHits: Record<number, number> = {};
+    const branchHits: Record<number, BranchHit> = {};
 
-      lines.forEach(l => {
-        if (!lineHits[l.number]) {
-          lineHits[l.number] = 0;
+    lines.forEach(l => {
+      if (!lineHits[l.number]) {
+        lineHits[l.number] = 0;
+      }
+      lineHits[l.number] += l.hits;
+      if (l.branch && l['condition-coverage']) {
+        const bh = parseBranch(l['condition-coverage']);
+        if (bh) {
+          branchHits[l.number] = bh;
         }
-        lineHits[l.number] += l.hits;
-        if (l.branch && l['condition-coverage']) {
-          const bh = parseBranch(l['condition-coverage']);
-          if (bh) {
-            branchHits[l.number] = bh;
-          }
-        }
-      });
-
-      const currentFile = scmFiles.find(f => f.endsWith(packageAndFilename));
-      logger.info(`matched ${packageAndFilename} to ${currentFile}`);
-      if (Object.keys(lineHits).length > 0 && currentFile) {
-        jscov.push({
-          filename: currentFile,
-          branchHits: branchHits,
-          lineHits: lineHits,
-        });
       }
     });
+
+    const currentFile = scmFiles.find(f => f.endsWith(packageAndFilename));
+    logger.info(`matched ${packageAndFilename} to ${currentFile}`);
+    if (Object.keys(lineHits).length > 0 && currentFile) {
+      jscov.push({
+        filename: currentFile,
+        branchHits: branchHits,
+        lineHits: lineHits,
+      });
+    }
   });
 
   return jscov;

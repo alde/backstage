@@ -33,7 +33,7 @@ import xmlparser from 'express-xml-bodyparser';
 import { convertCobertura, convertJacoco } from './converter';
 import { CodeCoverageDatabase } from './CodeCoverageDatabase';
 import { Entity } from '@backstage/catalog-model';
-import { CoberturaXML } from './converter/types';
+import { CoberturaXML, JacocoXML } from './converter/types';
 import { FileEntry, JsonCodeCoverage } from './jsoncoverage-types';
 
 export interface RouterOptions {
@@ -270,7 +270,7 @@ export const makeRouter = async (
       body,
     } = await processCoveragePayload(entity, req);
 
-    const files = await convertJacoco(body, scmFiles, logger);
+    const files = await convertJacoco(body as JacocoXML, scmFiles, logger);
     if (!files || files.length === 0) {
       throw new InputError('Unable to parse body as Jacoco XML');
     }

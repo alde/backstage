@@ -21,6 +21,7 @@ export type CoberturaXML = {
 
 export type Coverage = {
   packages: Array<Package>;
+  package: Array<InnerPackage>;
 };
 
 export type Package = {
@@ -37,6 +38,13 @@ export type InnerClass = {
   $: {
     filename: string;
   };
+  lines: Array<Line>;
+  methods: Array<Method>;
+};
+export type Method = {
+  method: Array<InnerMethod>;
+};
+export type InnerMethod = {
   lines: Array<Line>;
 };
 export type Line = {

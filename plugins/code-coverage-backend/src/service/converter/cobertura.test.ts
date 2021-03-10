@@ -22,7 +22,7 @@ import { getVoidLogger } from '@backstage/backend-common';
 /* eslint-disable no-restricted-syntax */
 
 describe('convert cobertura', () => {
-  [1].forEach(idx => {
+  [1, 2, 3, 4, 5].forEach(idx => {
     let fixture: CoberturaXML;
     parseString(
       fs.readFileSync(

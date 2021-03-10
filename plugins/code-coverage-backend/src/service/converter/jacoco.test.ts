@@ -37,7 +37,7 @@ describe('convert jacoco', () => {
       .toString(),
   );
   const scmFiles = fs
-    .readFileSync(`${__dirname}/__fixtures__/jacoco-sourcefiles.txt`)
+    .readFileSync(`${__dirname}/__fixtures__/jacoco-sourcefiles-1.txt`)
     .toString()
     .split('\n');
 
