@@ -20,8 +20,7 @@ import { MissingAnnotationEmptyState } from '@backstage/core';
 import { CodeCoveragePage } from './CodeCoveragePage';
 
 export const isCodeCoverageAvailable = (entity: Entity) =>
-  Boolean(entity.metadata.annotations?.['code-coverage']) &&
-  Boolean(entity.metadata.annotations?.['backstage.io/source-location']);
+  Boolean(entity.metadata.annotations?.['backstage.io/code-coverage']);
 
 export const Router = () => {
   const { entity } = useEntity();

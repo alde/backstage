@@ -4,21 +4,19 @@ This is the backend part of the code-coverage plugin. It takes care of processin
 
 ## Configuring your entity
 
-In order to use this plugin, you must set the following annotations:
+In order to use this plugin, you must set the `backstage.io/code-coverage` annotation.
 
 ```yaml
-code-coverage: enabled
+backstage.io/code-coverage: enabled
 ```
 
-It is also stronly recommended to set the [`backstage.io/source-location` annotation](https://backstage.io/docs/features/software-catalog/well-known-annotations#backstageiosource-location).
-
-There's a feature to only include files that are in VCS in the coverage report, this is helpful to not count generated files for example. To enable this set the code-coverage annotation to `scm-only`.
+There's a feature to only include files that are in VCS in the coverage report, this is helpful to not count generated files for example. To enable this set the `backstage.io/code-coverage` annotation to `scm-only`.
 
 ```yaml
-code-coverage: scm-only
+backstage.io/code-coverage: scm-only
 ```
 
-Note that this requires the `backstage.io/source-location` annotation to be set.
+Note: This requires the [`backstage.io/source-location` annotation](https://backstage.io/docs/features/software-catalog/well-known-annotations#backstageiosource-location) to be set.
 
 ## API
 
