@@ -88,8 +88,7 @@ export class CoverageUtils {
     body: {};
   }> {
     const enforceScmFiles =
-      entity.metadata.annotations?.['backstage.io/code-coverage-scm-only'] ||
-      false;
+      entity.metadata.annotations?.['code-coverage'] === 'scm-only' || false;
 
     let sourceLocation: string | undefined = undefined;
     let vcs: ScmIntegration | undefined = undefined;

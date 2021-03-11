@@ -13,21 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-/*
- * Copyright 2020 Spotify AB
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 
 import {
   createServiceBuilder,
@@ -39,7 +24,7 @@ import {
 import { Server } from 'http';
 import { Logger } from 'winston';
 import { createRouter } from './router';
-import Knex from 'knex';
+import { DatabaseManager } from '@backstage/plugin-catalog-backend';
 
 export interface ServerOptions {
   port: number;
@@ -52,26 +37,17 @@ export async function startStandaloneServer(
 ): Promise<Server> {
   const logger = options.logger.child({ service: 'code-coverage-backend' });
   const config = await loadBackendConfig({ logger, argv: process.argv });
-  const database = useHotMemoize(module, () => {
-    const knex = Knex({
-      client: 'sqlite3',
-      connection: ':memory:',
-      useNullAsDefault: true,
-    });
-    knex.client.pool.on('createSuccess', (_eventId: any, resource: any) => {
-      resource.run('PRAGMA foreign_keys = ON', () => {});
-    });
-    return knex;
-  });
 
-  logger.debug('Creating application...');
-
-  const discovery = SingleHostDiscovery.fromConfig(config);
+  const db = useHotMemoize(module, () =>
+    DatabaseManager.createInMemoryDatabaseConnection(),
+  );
 
   logger.debug('Starting application server...');
   const router = await createRouter({
+    database: { getClient: () => db },
     config,
-    discovery,
+    discovery: SingleHostDiscovery.fromConfig(config),
+    urlReader: UrlReaders.default({ logger, config }),
     logger,
   });
 

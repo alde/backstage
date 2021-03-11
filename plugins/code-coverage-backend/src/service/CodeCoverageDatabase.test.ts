@@ -18,11 +18,9 @@ import {
   SingleConnectionDatabaseManager,
 } from '@backstage/backend-common';
 import { ConfigReader } from '@backstage/config';
-import { data } from 'msw/lib/types/context';
 import {
   CodeCoverageDatabase,
   CodeCoverageStore,
-  RawDbCoverageRow,
 } from './CodeCoverageDatabase';
 import { JsonCodeCoverage } from './jsoncoverage-types';
 

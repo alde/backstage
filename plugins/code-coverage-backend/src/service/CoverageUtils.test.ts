@@ -15,9 +15,6 @@
  */
 import fs from 'fs';
 import { Readable } from 'stream';
-import { getVoidLogger, UrlReaders } from '@backstage/backend-common';
-import { ConfigReader } from '@backstage/config';
-import { ScmIntegrations } from '@backstage/integration';
 import {
   calculatePercentage,
   aggregateCoverage,
@@ -307,7 +304,7 @@ describe('CodeCoverageUtils', () => {
           name: 'test-entity',
           namespace: 'test',
           annotations: {
-            'backstage.io/code-coverage-scm-only': 'true',
+            'code-coverage': 'scm-only',
             'backstage.io/source-location': 'https://github.com/example/test/',
           },
         },
