@@ -26,7 +26,9 @@ export const Router = () => {
   const { entity } = useEntity();
 
   if (!isCodeCoverageAvailable(entity)) {
-    return <MissingAnnotationEmptyState annotation="code-coverage" />;
+    return (
+      <MissingAnnotationEmptyState annotation="backstage.io/code-coverage" />
+    );
   }
   return <CodeCoveragePage />;
 };
