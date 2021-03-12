@@ -84,7 +84,7 @@ export const CoverageHistoryChart = () => {
       <Box>
         <Card>
           <CardContent>
-            <Box pl={2} mb={2} display="flex" justifyContent="space-between">
+            <Box mb={2} display="flex" justifyContent="space-between">
               <Typography variant="h5">History</Typography>
             </Box>
             No coverage history found
@@ -115,7 +115,7 @@ export const CoverageHistoryChart = () => {
     <Box>
       <Card>
         <CardContent>
-          <Box pl={2} mb={2} display="flex" justifyContent="space-between">
+          <Box mb={2} display="flex" justifyContent="space-between">
             <Typography variant="h5">History</Typography>
             <Select>
               <MenuItem>7</MenuItem>
