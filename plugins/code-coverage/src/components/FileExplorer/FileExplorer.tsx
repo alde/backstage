@@ -17,11 +17,20 @@
 import { useApi } from '@backstage/core-api';
 import { useEntity } from '@backstage/plugin-catalog-react';
 import { Progress, Table, TableColumn } from '@backstage/core';
-import { Box, Card, CardContent, Typography } from '@material-ui/core';
+import {
+  Box,
+  Card,
+  CardContent,
+  Modal,
+  Tooltip,
+  Typography,
+} from '@material-ui/core';
 import React, { Fragment, useEffect, useState } from 'react';
 import { useAsync } from 'react-use';
 import { codeCoverageApiRef } from '../../api';
 import { Alert } from '@material-ui/lab';
+import DescriptionIcon from '@material-ui/icons/Description';
+import { FileContent } from './FileContent';
 
 type FileCoverage = {
   filename: string;
@@ -65,7 +74,9 @@ const buildFileStructure = (row: CoverageTableRow) => {
   row.files = Object.keys(dataGroupedByPath).map(pathGroup => {
     return buildFileStructure({
       path: pathGroup,
-      files: dataGroupedByPath[pathGroup],
+      files: dataGroupedByPath.hasOwnProperty('files')
+        ? dataGroupedByPath.files
+        : dataGroupedByPath[pathGroup],
       coverage:
         dataGroupedByPath[pathGroup].reduce(
           (acc: number, cur: CoverageTableRow) => acc + cur.coverage,
@@ -112,6 +123,8 @@ export const FileExplorer = () => {
   const [curData, setCurData] = useState<CoverageTableRow | undefined>();
   const [tableData, setTableData] = useState<CoverageTableRow[] | undefined>();
   const [curPath, setCurPath] = useState('');
+  const [modalOpen, setModalOpen] = useState(false);
+  const [curFile, setCurFile] = useState('');
   const codeCoverageApi = useApi(codeCoverageApiRef);
   const { loading, error, value } = useAsync(
     async () =>
@@ -180,7 +193,21 @@ export const FileExplorer = () => {
           );
         }
 
-        return <div>{row.path}</div>;
+        return (
+          <Box display="flex" alignItems="center">
+            {row.path}
+            <Tooltip title="View file content">
+              <DescriptionIcon
+                fontSize="small"
+                style={{ color: 'lightblue', cursor: 'pointer' }}
+                onClick={() => {
+                  setCurFile(`${curPath.slice(1)}/${row.path}`);
+                  setModalOpen(true);
+                }}
+              />
+            </Tooltip>
+          </Box>
+        );
       },
     },
     {
@@ -234,6 +261,13 @@ export const FileExplorer = () => {
             data={tableData || []}
             columns={columns}
           />
+          <Modal
+            open={modalOpen}
+            onClick={event => event.stopPropagation()}
+            onClose={() => setModalOpen(false)}
+          >
+            <FileContent filename={curFile} />
+          </Modal>
         </CardContent>
       </Card>
     </Box>
