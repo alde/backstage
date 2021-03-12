@@ -38,6 +38,7 @@ type CoverageTableRow = {
   missing: number;
   tracked: number;
   path: string;
+  tableData?: { id: number };
 };
 
 const buildFileStructure = (row: CoverageTableRow) => {
@@ -163,7 +164,7 @@ export const FileExplorer = () => {
           return (
             <div
               role="button"
-              tabIndex={row.tableData.id}
+              tabIndex={row.tableData!.id}
               style={{ color: 'lightblue', cursor: 'pointer' }}
               onKeyDown={() => {
                 setCurPath(`${curPath}/${row.path}`);
