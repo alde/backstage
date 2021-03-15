@@ -32,7 +32,7 @@ import { Alert } from '@material-ui/lab';
 import DescriptionIcon from '@material-ui/icons/Description';
 import { FileContent } from './FileContent';
 
-type FileCoverage = {
+export type FileCoverage = {
   filename: string;
   branchHits: { [branch: number]: number };
   lineHits: { [line: number]: number };
@@ -230,6 +230,10 @@ export const FileExplorer = () => {
 
   const pathArray = curPath.split('/');
   const lastPathElementIndex = pathArray.length - 1;
+  const fileCoverage = value.files.find((f: FileCoverage) =>
+    f.filename.endsWith(curFile),
+  );
+
   return (
     <Box mt={8}>
       <Card>
@@ -265,8 +269,9 @@ export const FileExplorer = () => {
             open={modalOpen}
             onClick={event => event.stopPropagation()}
             onClose={() => setModalOpen(false)}
+            style={{ overflow: 'scroll' }}
           >
-            <FileContent filename={curFile} />
+            <FileContent filename={curFile} coverage={fileCoverage} />
           </Modal>
         </CardContent>
       </Card>
