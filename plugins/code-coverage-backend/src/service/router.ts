@@ -161,7 +161,8 @@ export const makeRouter = async (
       return;
     }
 
-    res.status(200).send(content);
+    const data = content.toString();
+    res.status(200).contentType('text/plain').send(data);
   });
 
   router.post('/:kind/:namespace/:name/', async (req, res) => {

@@ -47,8 +47,7 @@ const getContent = async (value: any) => {
   if (value instanceof ArrayBuffer || ArrayBuffer.isView(value)) {
     blob = new Blob([value], { type: 'application/octet-stream' });
   }
-  const content = await blobToBase64(blob);
-  return content;
+  return value;
 };
 
 export const FileContent = ({ filename }: Props) => {
@@ -76,5 +75,12 @@ export const FileContent = ({ filename }: Props) => {
     return <Alert severity="error">{error.message}</Alert>;
   }
 
-  return <div>{filename}</div>;
+  return (
+    <div>
+      {filename}
+      <div>
+        <pre>{value}</pre>
+      </div>
+    </div>
+  );
 };

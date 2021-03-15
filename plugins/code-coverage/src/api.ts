@@ -57,10 +57,18 @@ export class CodeCoverageRestApi implements CodeCoverageApi {
 
   constructor(public url: string) {}
 
-  private async fetch<T = any>(input: string, init?: RequestInit): Promise<T> {
+  private async fetch<T = any | string>(
+    input: string,
+    init?: RequestInit,
+  ): Promise<T | string> {
     const resp = await fetch(`${this.url}${input}`, init);
     if (!resp.ok) throw await FetchError.forResponse(resp);
-    return await resp.json();
+    const body = await resp.text();
+    try {
+      return JSON.parse(body);
+    } catch (err) {
+      return body;
+    }
   }
 
   async getCoverageForEntity({
